@@ -10,6 +10,7 @@ use Amp\Promise;
 use Amp\TimeoutException;
 use function Amp\asyncCall;
 use function Amp\call;
+use function Amp\Parallel\Context\stream_socket_accept;
 
 class ProcessHub
 {
@@ -74,8 +75,8 @@ class ProcessHub
         $this->watcher = Loop::onReadable(
             $this->server,
             static function (string $watcher, $server) use (&$keys, &$acceptor): void {
-                // Error reporting suppressed since stream_socket_accept() emits E_WARNING on client accept failure.
-                while ($client = @\stream_socket_accept($server, 0)) {  // Timeout of 0 to be non-blocking.
+                // Timeout of 0 to be non-blocking.
+                while ($client = stream_socket_accept($server, 0)) {
                     asyncCall(static function () use ($client, &$keys, &$acceptor) {
                         $channel = new ChannelledSocket($client, $client);
 

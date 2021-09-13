@@ -52,3 +52,20 @@ function factory(?ContextFactory $factory = null): ContextFactory
     Loop::setState(LOOP_FACTORY_IDENTIFIER, $factory);
     return $factory;
 }
+
+/**
+ * Prevents the native stream_socket_accept from throwing a connection
+ * timed out ErrorException.
+ *
+ * @see \stream_socket_accept()
+ * @param ...$args
+ *
+ * @return bool|resource
+ */
+function stream_socket_accept(...$args) {
+    \set_error_handler(fn() => null);
+    $stream = \stream_socket_accept(...$args);
+    \restore_error_handler();
+
+    return $stream ?? false;
+}
